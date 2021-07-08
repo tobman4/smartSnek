@@ -7,6 +7,11 @@ namespace smartSnek {
             Game g = new Game(15,15);
             Console.ReadKey();
             while(1==1) {
+
+                if(g.isDead) {
+                    g.reset();
+                }
+
                 g.step();
                 Console.Clear();
                 Console.WriteLine(g.ToString());
@@ -23,6 +28,10 @@ namespace smartSnek {
                         break;
                     case ConsoleKey.DownArrow:
                         g.Down();
+                        break;
+
+                    case ConsoleKey.R:
+                        g.reset();
                         break;
                 }
             }

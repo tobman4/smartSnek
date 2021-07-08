@@ -12,6 +12,10 @@ namespace smartSnek {
             return new Point { X = X, Y = Y };
         }
 
+        public bool isZero() {
+            return X == 0 && Y == 0;
+        }
+
         public void add(Point p) {
             X += p.X;
             Y += p.Y;
@@ -27,16 +31,24 @@ namespace smartSnek {
 
     public class Game : IgameController {
 
-        private List<Point> snake;
-        private CellState[,] board;
-        private int score = 0;
-        private Point snakeSpeed = new Point { X = 1, Y = 0 };
-        private int toAdd = 2;
+        private Point snakeSpeed = new Point { X = 0, Y = 0 };
         private Point head => snake[0];
-        private bool isDead = false;
+        private List<Point> snake;
+        private int toAdd = 2;
+        private CellState[,] board;
+        private int foodScore = 0;
+        private int timeScore = 0;
         private Random rng;
 
+        public bool isDead { get; private set; } = false;
+        public int score => foodScore + timeScore;
+        public int Width { get; private set; }
+        public int Height { get; private set; }
+
         public Game(int w, int h, int seed = 0) {
+
+            Width = w;
+            Height = h;
 
             if(seed == 0) {
                 rng = new();
@@ -54,7 +66,8 @@ namespace smartSnek {
         }
 
         public void step() {
-            if (isDead) return;
+            if(isDead || snakeSpeed.isZero()) return;
+            timeScore++;
 
             Point hold = snake[0].Clone();
             
@@ -70,6 +83,7 @@ namespace smartSnek {
             } else if(board[head.X, head.Y] == CellState.Food) {
                 toAdd++;
                 placeFood();
+                foodScore += 500;
             }
 
             board[head.X, head.Y] = CellState.Snake;
@@ -86,6 +100,23 @@ namespace smartSnek {
             } else {
                 board[hold.X, hold.Y] = CellState.None;
             }
+        }
+
+        public void reset() {
+            isDead = false;
+
+            board = new CellState[Width,Height];
+
+            snake = new List<Point>();
+            snake.Add(new Point { X = Width / 2, Y = Height / 2 });
+
+            snakeSpeed = new Point { X = 0, Y = 0 };
+
+            foodScore = 0;
+            timeScore = 0;
+
+            toAdd = 2;
+            resetMap();
         }
 
         private void resetMap() {
@@ -150,7 +181,7 @@ namespace smartSnek {
                 for (int j = 0; j < board.GetLength(0); j++) {
                     switch(board[j,i]) {
                         case CellState.Food:
-                            o += "X";
+                            o += "F";
                             break;
                         case CellState.Snake:
                             o += "S";
